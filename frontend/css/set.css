@@ -1,0 +1,63 @@
+        body {
+            text-align: left;
+            list-style: none;
+            text-decoration: none;
+            /* 文字居中 */
+        }
+        
+        * {
+            padding: 0;
+            list-style: none;
+            text-decoration: none;
+            border: 0;
+            margin: 0px 0px;
+            /* 到边框的距离 */
+        }
+        
+        a:hover,
+        a:link,
+        a:visited,
+        a:active {
+            color: #000;
+        }
+        
+        .box {
+            width: 100%;
+            height: 760px;
+            text-decoration: none;
+        }
+        
+        .set1 {
+            width: 27%;
+            height: 760px;
+            float: left;
+            position: fixed;
+            padding-left: 80px;
+            padding-top: 40px;
+        }
+        
+        .set2 {
+            width: 73%;
+            height: 760px;
+            float: right;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .set2 .img {
+            width: 100%;
+            float: right;
+        }
+        
+        .set2 .a {
+            display: inline-block;
+        }
+        
+        .set1 ul li:hover {
+            background-color: #e5e5e5;
+        }
+        
+        .set1 li {
+            line-height: 40px;
+            width: 240px;
+        }

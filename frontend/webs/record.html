@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留言</title>
+    <link rel="icon" href="../jpg/ram.png" type="image/x-icon">
+    <link rel="stylesheet" href="../css/demo.css" type="text/css">
+    <link href="css/bootstrap-3.1.1.min.css" rel="stylesheet" type="text/css">
+    <!-- Custom Theme files -->
+    <link rel="stylesheet" href="../css/style.css" type="text/css">
+    <!-- bootstrap -->
+    <link href="../css/pl1.css" rel='stylesheet' type='text/css' media="all" />
+    <!-- //bootstrap -->
+    <link href="../css/pl2.css" rel="stylesheet">
+    <!-- Custom Theme files -->
+    <link href="../css/pl3.css" rel='stylesheet' type='text/css' media="all" />
+
+</head>
+
+<body>
+
+    <div class="menu">
+        <div class="left">
+            <ul>
+                <li><img src="../jpg/demo3.png"></li>
+                <li><a href="../index.html">首页</a></li>
+                <li>
+                    <a href="../webs/live.html">随笔</a>
+                </li>
+                <li>
+                    <a href="../webs/fun.html">娱乐</a>
+                </li>
+                <li><a href="#">留言</a></li>
+                <li><a href="../webs/resume.html">个人中心</a></li>
+
+            </ul>
+
+        </div>
+        <div class="right">
+            <ul>
+
+                <li>
+                    <a href="../webs/set.html" target="_blank"> <img src="../jpg/set.png" width="30px" height="30px"></a>
+                </li>
+                <li>
+                    <a href="../webs/sign.html" target="_blank">
+                        <img src="../jpg/logon.png" width="30px" height="30px">
+                    </a>
+                </li>
+                <li>
+                    <input type="text" placeholder="请输入..." name="" id="" value="" style="border-top-left-radius: 15px;
+                    border-top-right-radius: 15px;
+                    border-bottom-left-radius: 15px;
+                    border-bottom-right-radius: 15px;" />&nbsp;&nbsp;
+                    <a href="../webs/find.html" target="_blank"><button style="border-top-left-radius: 12px;
+                    border-top-right-radius: 12px;
+                    border-bottom-left-radius: 12px;
+                    border-bottom-right-radius: 12px;">搜</button>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+
+    </div>
+    <div class="all-comments">
+        <div class="all-comments-info">
+            <a href="#">评论 (<span id="commentCount">0</span>)</a>
+            <div class="box">
+                <form id="commentForm">
+                    <textarea id="commentContent" placeholder="请输入评论内容..." required></textarea>
+                    <input type="submit" value="发送">
+                    <div class="clearfix"> </div>
+                </form>
+            </div>
+            <div class="all-comments-buttons">
+                <ul>
+                    <li><a href="#" class="top" data-sort="hot">热门评论</a></li>
+                    <li><a href="#" class="top newest" data-sort="new">最新评论</a></li>
+                    <li><a href="#" class="top my-comment" data-sort="my">我的评论</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="commentsList" class="media-grids">
+            <!-- 评论列表将通过 JavaScript 动态加载 -->
+        </div>
+    </div>
+    </div>
+    <div class="copyright">
+        <p>Copyright &copy; 2021.芥子 by<a href="#">八斗</a></p>
+    </div>
+
+    <script>
+        // API基础URL
+        const API_BASE_URL = 'http://localhost:5000/api';
+        const POST_ID = '507f1f77bcf86cd799439011'; // 使用实际的文章ID
+
+        // 获取token
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        // 检查是否登录
+        function checkLogin() {
+            const token = getToken();
+            if (!token) {
+                alert('请先登录');
+                window.location.href = 'sign.html';
+                return false;
+            }
+            return true;
+        }
+
+        // 获取当前用户
+        function getCurrentUser() {
+            const userStr = localStorage.getItem('user');
+            return userStr ? JSON.parse(userStr) : null;
+        }
+
+        // 加载评论列表
+        async function loadComments(sortType = 'new') {
+            try {
+                const response = await fetch(`${API_BASE_URL}/comments/post/${POST_ID}`);
+                const comments = await response.json();
+                
+                const commentsList = document.getElementById('commentsList');
+                const commentCount = document.getElementById('commentCount');
+                
+                // 更新评论数量
+                commentCount.textContent = comments.length;
+                
+                // 清空现有评论
+                commentsList.innerHTML = '';
+                
+                // 根据排序类型处理评论
+                let sortedComments = [...comments];
+                switch(sortType) {
+                    case 'hot':
+                        // 按点赞数排序（如果有的话）
+                        sortedComments.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+                        break;
+                    case 'my':
+                        // 只显示当前用户的评论
+                        const currentUser = getCurrentUser();
+                        if (currentUser) {
+                            sortedComments = comments.filter(comment => 
+                                comment.author._id === currentUser._id
+                            );
+                        }
+                        break;
+                    case 'new':
+                    default:
+                        // 按时间倒序排序
+                        sortedComments.sort((a, b) => 
+                            new Date(b.createdAt) - new Date(a.createdAt)
+                        );
+                }
+                
+                // 添加评论到列表
+                sortedComments.forEach(comment => {
+                    const commentElement = document.createElement('div');
+                    commentElement.className = 'media';
+                    
+                    const currentUser = getCurrentUser();
+                    const isAuthor = currentUser && comment.author._id === currentUser._id;
+                    
+                    commentElement.innerHTML = `
+                        <h5>${comment.author.username}</h5>
+                        <div class="media-body">
+                            <p>${comment.content}</p>
+                            <div class="media-date">
+                                ${new Date(comment.createdAt).toLocaleString()}
+                            </div>
+                            ${isAuthor ? `
+                                <div class="comment-actions">
+                                    <button onclick="editComment('${comment._id}')" class="edit-btn">编辑</button>
+                                    <button onclick="deleteComment('${comment._id}')" class="delete-btn">删除</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    commentsList.appendChild(commentElement);
+                });
+            } catch (error) {
+                console.error('加载评论失败:', error);
+                const commentsList = document.getElementById('commentsList');
+                commentsList.innerHTML = '<div class="error-message">加载评论失败，请稍后重试</div>';
+            }
+        }
+
+        // 提交评论
+        document.getElementById('commentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!checkLogin()) return;
+            
+            const content = document.getElementById('commentContent').value;
+            if (!content.trim()) {
+                alert('请输入评论内容');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({
+                        post: POST_ID,
+                        content: content
+                    })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('commentContent').value = '';
+                    loadComments(); // 重新加载评论列表
+                } else {
+                    const error = await response.json();
+                    alert(error.message || '发表评论失败');
+                }
+            } catch (error) {
+                console.error('发表评论失败:', error);
+                alert('发表评论失败，请稍后重试');
+            }
+        });
+
+        // 编辑评论
+        async function editComment(commentId) {
+            if (!checkLogin()) return;
+            
+            const newContent = prompt('请输入新的评论内容');
+            if (!newContent) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/comments/${commentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({
+                        content: newContent
+                    })
+                });
+                
+                if (response.ok) {
+                    loadComments(); // 重新加载评论列表
+                } else {
+                    const error = await response.json();
+                    alert(error.message || '编辑评论失败');
+                }
+            } catch (error) {
+                console.error('编辑评论失败:', error);
+                alert('编辑评论失败，请稍后重试');
+            }
+        }
+
+        // 删除评论
+        async function deleteComment(commentId) {
+            if (!checkLogin()) return;
+            
+            if (!confirm('确定要删除这条评论吗？')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/comments/${commentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`
+                    }
+                });
+                
+                if (response.ok) {
+                    loadComments(); // 重新加载评论列表
+                } else {
+                    const error = await response.json();
+                    alert(error.message || '删除评论失败');
+                }
+            } catch (error) {
+                console.error('删除评论失败:', error);
+                alert('删除评论失败，请稍后重试');
+            }
+        }
+
+        // 页面加载时获取评论列表
+        document.addEventListener('DOMContentLoaded', () => loadComments('new'));
+
+        // 评论排序按钮点击事件
+        document.querySelectorAll('.all-comments-buttons a').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sortType = this.dataset.sort;
+                loadComments(sortType);
+            });
+        });
+    </script>
+
+</body>
+
+</html>
