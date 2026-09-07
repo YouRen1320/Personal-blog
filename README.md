@@ -1,5 +1,8 @@
 # 博客系统
 
+> [!IMPORTANT]
+> **历史博客学习项目，已停止维护。** 本仓库保留 MongoDB、Express 与静态前端的早期全栈练习，不再作为个人网站主入口。当前维护的博客项目请查看 [Blog](https://github.com/YouRen1320/Blog)。代码和提交历史继续保留。
+
 这是一个基于MongoDB、Node.js和Python的博客系统，支持用户注册、登录、发布文章、评论等功能。
 
 ## 功能特点
@@ -375,4 +378,4 @@ Authorization: Bearer <token>
 
 ## 许可证
 
-[MIT](LICENSE) 
+[MIT](LICENSE)
